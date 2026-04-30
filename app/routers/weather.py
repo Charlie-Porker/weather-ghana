@@ -7,8 +7,26 @@ import requests
 
 router = APIRouter(prefix="/weather")
 
-@router.get("/{city}")
+@router.get("/")
+def get_all():
+    db = SessionLocal()
+    all_city = db.query(WeatherCache).all()
+    return all_city    
 
+@router.delete("/{city}")
+def del_city(city):
+    db = SessionLocal()
+    del_one = db.query(WeatherCache).filter(WeatherCache.city == city).first()
+    if not del_one:
+        raise HTTPException(status_code=404, detail="city not found")
+    else:
+        db.delete(del_one)
+        db.commit()
+    return {
+        "mess": "success" 
+    }        
+
+@router.get("/{city}")
 def get_weather(city):
     db = SessionLocal()
     cached = db.query(WeatherCache).filter(WeatherCache.city == city).first()
