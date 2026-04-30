@@ -13,6 +13,10 @@ class UserRegister(BaseModel):
     email: str
     password: str
 
+class UserLogin(BaseModel):
+      username: str
+      password: str
+
 @router.post("/register")
 def NewUser(payload: UserRegister,
             db=Depends(get_db)):
@@ -30,3 +34,18 @@ def NewUser(payload: UserRegister,
               return {
                     "Mess": "User Created"
               }
+        
+@router.post("/login")
+def user_log(payload: UserLogin,
+             db=Depends(get_db)):
+      user = db.query(UserData).filter(UserData.username == payload.username).first()
+      if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+      
+      else:
+            check = pwd_context.verify(payload.password, user.password)
+            if not check:
+                  raise HTTPException(status_code=401, detail="Wrong Pasword")
+            return {
+                  "message": "Login successful"
+            }
