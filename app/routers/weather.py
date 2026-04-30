@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException
-from app.database import SessionLocal
+from fastapi import APIRouter, HTTPException, Depends
 from app.models.models import WeatherCache
 from datetime import datetime
 from pydantic import BaseModel
+from app.database import get_db
 
 import requests
 class WeatherUpdate(BaseModel):
@@ -11,15 +11,14 @@ class WeatherUpdate(BaseModel):
 router = APIRouter(prefix="/weather")
 
 @router.get("/")
-def get_all():
-    db = SessionLocal()
+def get_all(db=Depends(get_db)):
     all_city = db.query(WeatherCache).all()
     return all_city  
 
 @router.put("/{city}")
 def upda_city(city,
-              payload: WeatherUpdate):
-    db = SessionLocal()
+              payload: WeatherUpdate,
+              db=Depends(get_db)):
     up_city = db.query(WeatherCache).filter(WeatherCache.city == city).first()
     if not up_city:
         raise HTTPException(status_code=404, detail="City not found")
@@ -32,8 +31,8 @@ def upda_city(city,
     }
 
 @router.delete("/{city}")
-def del_city(city):
-    db = SessionLocal()
+def del_city(city,
+             db=Depends(get_db)):
     del_one = db.query(WeatherCache).filter(WeatherCache.city == city).first()
     if not del_one:
         raise HTTPException(status_code=404, detail="city not found")
@@ -45,8 +44,8 @@ def del_city(city):
     }        
 
 @router.get("/{city}")
-def get_weather(city):
-    db = SessionLocal()
+def get_weather(city,
+                db=Depends(get_db)):
     cached = db.query(WeatherCache).filter(WeatherCache.city == city).first()
     if cached:
         age = datetime.utcnow() - cached.time
