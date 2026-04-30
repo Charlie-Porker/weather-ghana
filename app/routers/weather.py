@@ -2,8 +2,11 @@ from fastapi import APIRouter, HTTPException
 from app.database import SessionLocal
 from app.models.models import WeatherCache
 from datetime import datetime
+from pydantic import BaseModel
 
 import requests
+class WeatherUpdate(BaseModel):
+    temperature: float
 
 router = APIRouter(prefix="/weather")
 
@@ -11,7 +14,22 @@ router = APIRouter(prefix="/weather")
 def get_all():
     db = SessionLocal()
     all_city = db.query(WeatherCache).all()
-    return all_city    
+    return all_city  
+
+@router.put("/{city}")
+def upda_city(city,
+              payload: WeatherUpdate):
+    db = SessionLocal()
+    up_city = db.query(WeatherCache).filter(WeatherCache.city == city).first()
+    if not up_city:
+        raise HTTPException(status_code=404, detail="City not found")
+    else:
+        up_city.temperature = payload.temperature
+        up_city.time = datetime.utcnow()
+        db.commit()
+    return {
+        "ma": "done updating"
+    }
 
 @router.delete("/{city}")
 def del_city(city):
@@ -54,3 +72,5 @@ def get_weather(city):
 
     db.commit()
     return {"city": city, "temperature": temp}
+
+
