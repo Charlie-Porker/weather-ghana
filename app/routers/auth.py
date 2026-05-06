@@ -3,6 +3,7 @@ from app.models.user import UserData
 from pydantic import BaseModel
 from app.database import get_db
 from passlib.context import CryptContext
+from app.auth_utils import create_token
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 
@@ -47,5 +48,5 @@ def user_log(payload: UserLogin,
             if not check:
                   raise HTTPException(status_code=401, detail="Wrong Pasword")
             return {
-                  "message": "Login successful"
+                  "access_token": create_token(user.username)
             }
