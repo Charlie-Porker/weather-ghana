@@ -2,10 +2,14 @@ from jose import jwt
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 oauth2_scheme = HTTPBearer()
 
-SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
 
 def create_token(username: str):
