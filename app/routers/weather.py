@@ -3,6 +3,8 @@ from app.models.models import WeatherCache
 from datetime import datetime
 from pydantic import BaseModel
 from app.database import get_db
+from app.auth_utils import verify_token
+
 
 import requests
 class WeatherUpdate(BaseModel):
@@ -45,7 +47,8 @@ def del_city(city,
 
 @router.get("/{city}")
 def get_weather(city,
-                db=Depends(get_db)):
+                db=Depends(get_db),
+                username=Depends(verify_token)):
     cached = db.query(WeatherCache).filter(WeatherCache.city == city).first()
     if cached:
         age = datetime.utcnow() - cached.time
