@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from app.database import get_db
 from app.auth_utils import verify_token
+from app.schemas.weather import WeatherResponse
 
 
 import requests
@@ -45,7 +46,7 @@ def del_city(city,
         "mess": "success" 
     }        
 
-@router.get("/{city}")
+@router.get("/{city}", response_model=WeatherResponse)
 def get_weather(city,
                 db=Depends(get_db),
                 username=Depends(verify_token)):
